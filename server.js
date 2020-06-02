@@ -27,21 +27,13 @@ mongoose
 const app = require('./app');
 
 const port = process.env.PORT || 3000;
-const server = require('http').createServer(app);
-const io = require('socket.io').listen(server);
+const server = app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});
 
-io.set('transports', [
-  'websocket',
-  'flashsocket',
-  'htmlfile',
-  'xhr-polling',
-  'jsonp-polling',
-  'polling'
-]);
+const io = require('socket.io')(server);
 
 io.on('connection', () => console.log('socket is on'));
-
-server.listen(port, () => console.log(`Server running on port ${port}`));
 
 process.on('unhandledRejection', err => {
   console.log(err.name, err.message);
