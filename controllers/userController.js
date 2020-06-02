@@ -75,10 +75,6 @@ const deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-// DO NOT CHANGE PASSWORDS WITH THIS
-// const deleteUser = deleteOne(User);
-// const updateUser = updateOne(User);
-
 module.exports = {
   getAllUsers,
   updateMe,
