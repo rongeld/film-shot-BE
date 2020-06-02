@@ -28,7 +28,7 @@ const app = require('./app');
 
 const port = process.env.PORT || 3000;
 const server = require('http').createServer(app);
-const io = require('socket.io').listen(server);
+const io = require('socket.io')(server);
 
 server.listen(port, () => console.log(`Server running on port ${port}`));
 
