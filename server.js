@@ -27,13 +27,15 @@ mongoose
 const app = require('./app');
 
 const port = process.env.PORT || 3000;
-const server = app.listen(port, () => {
+const server = require('http').createServer(app);
+
+server.listen(port, () => {
   console.log(`App running on port ${port}`);
 });
 
-const io = require('socket.io')(server);
+const io = require('socket.io').listen(server);
 
-io.on('connection', () => console.log('socket is on'));
+io.sockets.on('connection', () => console.log('socket is on'));
 
 process.on('unhandledRejection', err => {
   console.log(err.name, err.message);
