@@ -102,7 +102,7 @@ const postPrivateMessage = catchAsync(async (req, res, next) => {
         from,
         body: req.body.body
       });
-      // require('../server').io.emit('messages', message);
+      require('../server').io.emit('messages', message);
 
       await message.save();
 
