@@ -7,7 +7,7 @@
   "description": "no",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "debug": "ndb server.js"
   },
   "author": "Andrii Zakrevskyi",
