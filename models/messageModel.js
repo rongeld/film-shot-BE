@@ -19,6 +19,10 @@ const messageModel = new mongoose.Schema(
     body: {
       type: String,
       required: [true, 'Message can not be empty']
+    },
+    isRead: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

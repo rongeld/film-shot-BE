@@ -16,6 +16,7 @@ const getConversations = catchAsync(async (req, res, next) => {
         as: 'recipientObj'
       }
     },
+
     { $sort: { updatedAt: -1 } }
   ])
     .match({ recipients: { $all: [{ $elemMatch: { $eq: from } }] } })
@@ -31,11 +32,27 @@ const getConversations = catchAsync(async (req, res, next) => {
   });
 });
 
-// Get messages from conversation
-// based on to & from
 const getMessagesFromConversation = catchAsync(async (req, res, next) => {
   const user1 = mongoose.Types.ObjectId(req.user.id);
   const user2 = mongoose.Types.ObjectId(req.query.userId);
+  let matchObj;
+
+  if (req.query.messages) {
+    matchObj = {
+      $and: [{ isRead: false }, { to: user1 }]
+    };
+  } else {
+    matchObj = {
+      $or: [
+        { $and: [{ to: user1 }, { from: user2 }] },
+        { $and: [{ to: user2 }, { from: user1 }] }
+      ]
+    };
+  }
+  if (req.query.userId) {
+    await Message.updateMany({ to: user1 }, { isRead: true });
+  }
+
   const messages = await Message.aggregate([
     {
       $lookup: {
@@ -50,16 +67,11 @@ const getMessagesFromConversation = catchAsync(async (req, res, next) => {
         from: 'users',
         localField: 'from',
         foreignField: '_id',
-        as: 'fromObj'
+        as: 'senderInfo'
       }
     }
   ])
-    .match({
-      $or: [
-        { $and: [{ to: user1 }, { from: user2 }] },
-        { $and: [{ to: user2 }, { from: user1 }] }
-      ]
-    })
+    .match(matchObj)
     .project({
       'toObj.password': 0,
       'toObj.__v': 0,
@@ -98,7 +110,8 @@ const postPrivateMessage = catchAsync(async (req, res, next) => {
         conversation: conversation._id,
         to,
         from,
-        body: req.body.body
+        body: req.body.body,
+        isRead: false
       });
       const messageData = {
         conversation: message.conversation,
