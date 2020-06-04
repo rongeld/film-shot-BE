@@ -4,8 +4,6 @@ const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-// const { deleteOne, updateOne } = require('./handlerFactory');
-
 // Get conversations list
 const getConversations = catchAsync(async (req, res, next) => {
   const from = mongoose.Types.ObjectId(req.user.id);
@@ -102,7 +100,19 @@ const postPrivateMessage = catchAsync(async (req, res, next) => {
         from,
         body: req.body.body
       });
-      require('../server').io.emit('messages', message);
+      const messageData = {
+        conversation: message.conversation,
+        to: message.to,
+        from: message.from,
+        body: message.body,
+        senderInfo: {
+          photo: req.user.photo,
+          id: req.user._id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        }
+      };
+      require('../server').io.emit('messages', messageData);
 
       await message.save();
 
