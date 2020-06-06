@@ -3,6 +3,7 @@ const Conversation = require('../models/conversationModel');
 const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+// const socketsObj = require('../app');
 
 // Get conversations list
 const getConversations = catchAsync(async (req, res, next) => {
@@ -125,7 +126,8 @@ const postPrivateMessage = catchAsync(async (req, res, next) => {
           lastName: req.user.lastName
         }
       };
-      require('../server').io.emit('messages', messageData);
+      req.io.to(req.socketsObj[req.body.to]).emit('messages', messageData);
+      req.io.to(req.socketsObj[req.user.id]).emit('messages', messageData);
 
       await message.save();
 

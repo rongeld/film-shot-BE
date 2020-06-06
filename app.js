@@ -7,12 +7,72 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const server = require('./server');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
+
+process.on('uncaughtException', err => {
+  console.log(err);
+  process.exit(1);
+});
+
+dotenv.config({
+  path: './config.env'
+});
+
+const DB = process.env.DATABASE.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
+
+mongoose
+  .connect(DB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log('DB connection successful!'));
+
+const port = process.env.PORT || 3000;
+const server = app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});
+
+const io = require('socket.io').listen(server);
+
+const sockets = {};
+let onlineUsers = [];
+
+io.sockets.on('connection', socket => {
+  socket.on('logged', data => {
+    sockets[data._id] = socket.id;
+    onlineUsers.push(data);
+    io.emit('logged', onlineUsers);
+  });
+  socket.on('disconnect', function() {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const i in sockets) {
+      if (sockets[i] === socket.id) {
+        delete sockets[i];
+      }
+    }
+    const updatedUsers = onlineUsers.filter(item => sockets[item._id]);
+    io.emit('logged', updatedUsers);
+    onlineUsers = updatedUsers;
+  });
+});
+
+process.on('unhandledRejection', err => {
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});
 
 app.use(cors());
 app.use(
@@ -51,11 +111,11 @@ app.use(xss());
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: false })); // support encoded bodies
 
-// Assign socket object to every request
-// app.use(function(req, res, next) {
-//   req.io = io;
-//   next();
-// });
+app.use(function(req, res, next) {
+  req.io = io;
+  req.socketsObj = sockets;
+  next();
+});
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/posts', postRouter);
@@ -67,4 +127,4 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-module.exports = app;
+// module.exports = sockets;
