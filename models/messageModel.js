@@ -9,12 +9,10 @@ const messageModel = new mongoose.Schema(
     to: {
       type: mongoose.Schema.ObjectId,
       ref: 'User'
-      // required: [true, 'Message must have a recipient']
     },
     from: {
       type: mongoose.Schema.ObjectId,
       ref: 'User'
-      // required: [true, 'Message must belong to User']
     },
     body: {
       type: String,

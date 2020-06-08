@@ -7,7 +7,10 @@ const AppError = require('../utils/appError');
 // const { deleteOne, updateOne } = require('./handlerFactory');
 
 const getAllPosts = catchAsync(async (req, res, next) => {
-  const postAPI = new APIfunctionality(Post.find(), req.query)
+  const postAPI = new APIfunctionality(
+    Post.find().populate('comments'),
+    req.query
+  )
     .filter()
     .sort()
     .fields();
@@ -28,24 +31,6 @@ const createPost = catchAsync(async (req, res, next) => {
     data: newPost
   });
 });
-
-// const updateTour = updateOne(Tour);
-// const updateTour = catchAsync(async (req, res, next) => {
-//   const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-//     new: true,
-//     runValidators: true
-//   });
-
-//   if (!updatedTour) {
-//     return next(new AppError('No tour found with that ID', 404));
-//   }
-//   res.status(200).json({
-//     status: 'success',
-//     data: {
-//       tour: updatedTour
-//     }
-//   });
-// });
 
 const deletePost = catchAsync(async (req, res, next) => {
   const post = await Post.findByIdAndDelete(req.params.id);

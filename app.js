@@ -83,6 +83,7 @@ app.use(
 const userRouter = require('./routes/userRoutes');
 const postRouter = require('./routes/postRoutes');
 const messageRouter = require('./routes/messageRoutes');
+const commentRouter = require('./routes/commentRouter');
 
 // Development Login
 if (process.env.NODE_ENV === 'development') {
@@ -120,6 +121,7 @@ app.use(function(req, res, next) {
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/posts', postRouter);
 app.use('/api/v1/messages', messageRouter);
+app.use('/api/v1/comments', commentRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError('cant find route', 404));

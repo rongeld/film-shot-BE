@@ -26,6 +26,12 @@ const postModel = new mongoose.Schema(
   }
 );
 
+postModel.virtual('comments', {
+  ref: 'Comment',
+  foreignField: 'post',
+  localField: '_id'
+});
+
 postModel.pre(/^find/, function() {
   this.populate({
     path: 'author',
