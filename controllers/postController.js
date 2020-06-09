@@ -32,6 +32,46 @@ const createPost = catchAsync(async (req, res, next) => {
   });
 });
 
+const likePost = catchAsync(async (req, res, next) => {
+  const postToLike = await Post.findById(req.params.id);
+
+  if (
+    postToLike.likes.filter(like => like.user.toString() === req.user.id)
+      .length > 0
+  ) {
+    return next(new AppError('User already liked this post', 400));
+  }
+  postToLike.likes.push({ user: req.user.id });
+
+  const like = await postToLike.save();
+  res.status(201).json({
+    status: 'success',
+    data: like
+  });
+});
+
+const unLikePost = catchAsync(async (req, res, next) => {
+  const postToLike = await Post.findById(req.params.id);
+
+  if (
+    postToLike.likes.filter(like => like.user.toString() === req.user.id)
+      .length === 0
+  ) {
+    return next(new AppError('You have not yet liked this post', 400));
+  }
+  const removeIndex = postToLike.likes
+    .map(item => item.user.toString())
+    .indexOf(req.user.id);
+
+  postToLike.likes.splice(removeIndex, 1);
+
+  await postToLike.save();
+  res.status(201).json({
+    status: 'success',
+    data: postToLike
+  });
+});
+
 const deletePost = catchAsync(async (req, res, next) => {
   const post = await Post.findByIdAndDelete(req.params.id);
   const imagePath = post.photo;
@@ -54,5 +94,7 @@ const deletePost = catchAsync(async (req, res, next) => {
 module.exports = {
   getAllPosts,
   createPost,
-  deletePost
+  deletePost,
+  likePost,
+  unLikePost
 };
