@@ -54,6 +54,20 @@ io.sockets.on('connection', socket => {
     onlineUsers.push(data);
     io.emit('logged', onlineUsers);
   });
+  socket.on('request', data => {
+    io.to(sockets[data.to]).emit('request', {
+      from: onlineUsers.find(user => user.id === data.from)
+    });
+  });
+  socket.on('call', data => {
+    io.to(sockets[data.to]).emit('call', {
+      ...data,
+      from: onlineUsers.find(user => user.id === data.from)
+    });
+  });
+  socket.on('end', data => {
+    io.to(sockets[data.to]).emit('end');
+  });
   socket.on('disconnect', function() {
     // eslint-disable-next-line no-restricted-syntax
     for (const i in sockets) {
