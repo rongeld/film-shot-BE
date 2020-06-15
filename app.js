@@ -50,11 +50,8 @@ let onlineUsers = [];
 
 io.sockets.on('connection', socket => {
   socket.on('logged', data => {
-    if (!sockets[data._id]) {
-      sockets[data._id] = socket.id;
-      onlineUsers.push(data);
-    }
-
+    sockets[data._id] = socket.id;
+    onlineUsers.push(data);
     io.emit('logged', onlineUsers);
   });
   socket.on('request', data => {
